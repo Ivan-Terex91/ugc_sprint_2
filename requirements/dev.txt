@@ -1,0 +1,5 @@
+fastapi
+orjson
+uvicorn
+gunicorn
+httpx
