@@ -4,6 +4,7 @@ import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyHeader
 from httpx import HTTPError
+from pydantic import UUID4
 
 logger = logging.getLogger(__name__)
 
@@ -46,3 +47,6 @@ async def auth_current_user(
 
     if response.status_code != status.HTTP_200_OK:
         raise credentials_exception
+
+    data = response.json()
+    return UUID4(data["user_id"])

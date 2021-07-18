@@ -1,11 +1,13 @@
 import logging
 
 import uvicorn as uvicorn
+from api.v1 import bookmark, rating, review
+from core import auth, config, mongo
+from core.auth import AuthClient
+from core.logger import LOGGING
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
-from api.v1 import rating, review, movie_bookmark
-from core import config
-from core.logger import LOGGING
+from motor.motor_asyncio import AsyncIOMotorClient
 
 app = FastAPI(
     title=config.PROJECT_NAME,
@@ -17,17 +19,18 @@ app = FastAPI(
 
 @app.on_event("startup")
 async def startup():
-    pass
+    auth.auth_client = AuthClient(base_url=config.AUTH_URL)
+    mongo.mongo_client = AsyncIOMotorClient(config.MONGO_DSN)
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    pass
+    mongo.mongo_client.close()
 
 
 app.include_router(rating.router, prefix="/api/v1/rating", tags=["ratings"])
 app.include_router(review.router, prefix="/api/v1/review", tags=["reviews"])
-app.include_router(movie_bookmark.router, prefix="/api/v1/movie_bookmark", tags=["movie_bookmarks"])
+app.include_router(bookmark.router, prefix="/api/v1/bookmark", tags=["bookmarks"])
 
 if __name__ == "__main__":
     uvicorn.run(
@@ -36,4 +39,5 @@ if __name__ == "__main__":
         port=7777,
         log_config=LOGGING,
         log_level=logging.DEBUG,
+        reload=True,
     )
