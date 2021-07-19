@@ -4,7 +4,6 @@ from typing import Optional
 import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyHeader
-from httpx import HTTPError
 from pydantic import UUID4
 
 logger = logging.getLogger(__name__)
@@ -42,7 +41,7 @@ async def auth_current_user(
 
     try:
         response = await auth_client.check_token(token)
-    except HTTPError as exc:
+    except httpx.HTTPError as exc:
         logger.error(f"Auth request failed: {exc!r}")
         raise credentials_exception
 

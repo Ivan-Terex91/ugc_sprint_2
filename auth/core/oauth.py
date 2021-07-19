@@ -12,10 +12,10 @@ def fetch_token(provider_name: str):
         provider=provider, user_id=user.id
     )
     token = OAuth2Token(
-        dict(
-            access_token=oauth_account.access_token,
-            expires_at=oauth_account.exp.timestamp(),
-        )
+        {
+            "access_token": oauth_account.access_token,
+            "expires_at": oauth_account.exp.timestamp(),
+        }
     )
     return token
 

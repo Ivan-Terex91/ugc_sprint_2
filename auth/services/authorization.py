@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from core.db import Permission, Role, RolePermission, User, UserRole
+from core.db import Permission, Role, RolePermission, UserRole
 from sqlalchemy.orm import Session
 
 

@@ -14,9 +14,7 @@ class CaptchaGenerateView(Resource):
         CaptchaChallengeModel, code=200, description="New captcha challenge"
     )
     def post(self):
-        """
-        Generate new captcha challenge
-        """
+        """Generate new captcha challenge"""
         return self.services.captcha.create()
 
 
@@ -25,16 +23,14 @@ class CaptchaPayloadView(Resource):
     @ns.response(200, description="Captcha challenge payload")
     @ns.produces(["application/png"])
     def get(self, id):
-        """
-        Get captcha challenge payload
-        """
+        """Get captcha challenge payload"""
         captcha_challenge = self.services.captcha.get(id)
-        b = BytesIO()
-        b.write(captcha_challenge.payload)
-        b.seek(0)
+        bytes = BytesIO()
+        bytes.write(captcha_challenge.payload)
+        bytes.seek(0)
 
         return send_file(
-            b,
+            bytes,
             attachment_filename="challenge.png",
             cache_timeout=0,
         )
@@ -46,8 +42,6 @@ class CaptchaVerifyView(Resource):
     @ns.response(400, description="Captcha challenge is invalid")
     @ns.response(404, description="Captcha challenge not found")
     def post(self, hash_key):
-        """
-        Verify captcha solution
-        """
+        """Verify captcha solution"""
         self.services.captcha.verify(hash_key)
         return None, 200

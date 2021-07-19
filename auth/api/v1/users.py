@@ -1,7 +1,8 @@
 import datetime
 
 from api.v1.models.history import History
-from api.v1.models.users import ChangePassword as ImportedChangePassword, UserModel
+from api.v1.models.users import ChangePassword as ImportedChangePassword
+from api.v1.models.users import UserModel
 from core.api import Resource, login_required
 from flask import request
 from flask_restx import Namespace
@@ -43,8 +44,7 @@ class UserProfile(Resource):
         updated_user = self.services.user.put(user_data.user_id, **self.api.payload)
         if "birthdate" in self.api.payload:
             if (
-                datetime.date.today().year
-                - datetime.datetime.strptime(
+                datetime.date.today().year - datetime.datetime.strptime(
                     self.api.payload["birthdate"], "%Y-%m-%d"
                 ).year
             ) >= 18:

@@ -28,9 +28,7 @@ class OAuthAccountResource(Resource):
         OAuthAccountModel, as_list=True, code=200, description="List of oauth accounts"
     )
     def get(self):
-        """
-        Get list of connected oauth accounts
-        """
+        """Get list of connected oauth accounts"""
         user = get_current_user()
         return self.services.oauth_account.get_all_by_user_id(user.id)
 
@@ -38,9 +36,7 @@ class OAuthAccountResource(Resource):
 @ns.route("/facebook/", endpoint="oauth_facebook")
 class OAuthFacebookResource(Resource):
     def get(self):
-        """
-        Start authentication by Facebook provider
-        """
+        """Start authentication by Facebook provider"""
         redirect_uri = url_for("oauth_facebook_complete", _external=True)
         response = oauth.facebook.authorize_redirect(redirect_uri)
         return response
@@ -49,9 +45,7 @@ class OAuthFacebookResource(Resource):
     @ns.doc(security="api_key")
     @ns.response(204, description="Successfully deleted user profile")
     def delete(self):
-        """
-        Remove connected oauth account
-        """
+        """Remove connected oauth account"""
         user = get_current_user()
         oauth_account = self.services.oauth_account.get_by_user_id(
             provider=OAuthProvider.facebook, user_id=user.id
@@ -68,9 +62,7 @@ class OAuthFacebookResource(Resource):
 class OAuthFacebookCompleteResource(Resource):
     @ns.response(200, description="Successfully logged in", model=LoginResponseModel)
     def get(self):
-        """
-        Complete authentication for Facebook provider
-        """
+        """Complete authentication for Facebook provider"""
         token_data = oauth.facebook.authorize_access_token()
         access_token = token_data["access_token"]
         exp = datetime.fromtimestamp(token_data["expires_at"], tz=timezone.utc)

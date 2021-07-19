@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Optional
 
 from api.v1.models.review import AddReviewModel, UserRatingReview
 from core.auth import auth_current_user

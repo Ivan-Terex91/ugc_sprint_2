@@ -18,7 +18,6 @@ class UserService:
 
     def create(self, **created_data) -> User:
         """Создание нового пользователя"""
-
         if self.session.query(User).filter(User.email == created_data["email"]).first():
             raise EmailUsedError("This email address is already in use")
 

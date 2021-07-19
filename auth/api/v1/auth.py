@@ -2,8 +2,9 @@ from api.v1.models.auth import (LoginResponseModel, RefreshTokenModel,
                                 RefreshTokensResponseModel,
                                 SignupResponseModel)
 from api.v1.models.users import LoginRequestModel
-from core.api import Resource, captcha_challenge, login_required
-from flask import g, request
+from core.api import Resource, login_required
+from flask import g as g_proxy
+from flask import request
 from flask_restx import Namespace
 
 authorizations = {
@@ -13,17 +14,12 @@ authorizations = {
         "name": "TOKEN",
     }
 }
+
 ns = Namespace("Auth Namespace", authorizations=authorizations, security="api_key")
-
-
-# signup_parser = ns.parser()
-# signup_parser.add_argument("CAPTCHA_HASH_KEY", location="headers")
 
 
 @ns.route("/signup/")
 class SignupView(Resource):
-    # @captcha_challenge
-    # @ns.param("CAPTCHA_HASH_KEY", _in="header")
     @ns.expect(LoginRequestModel, validate=True)
     @ns.response(409, description="This email address is already in use")
     @ns.response(400, description="Bad request")
@@ -89,7 +85,7 @@ class LogoutView(Resource):
         self.services.user_history.insert_entry(
             user_id=user_data.user_id, action="logout", user_agent=user_agent
         )
-        self.services.token_service.remove_tokens(g.access_token)
+        self.services.token_service.remove_tokens(g_proxy.access_token)
         return "Successfully logout"
 
 

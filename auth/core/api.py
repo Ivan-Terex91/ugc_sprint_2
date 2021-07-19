@@ -2,7 +2,8 @@ from functools import wraps
 
 from core.db import session
 from core.exceptions import AuthError, AuthorizationError, BadRequestError
-from flask import g, request
+from flask import g as g_proxy
+from flask import request
 from flask_restx import Resource as RestResource
 from services import services
 
@@ -23,7 +24,7 @@ def login_required(func):
         if not token:
             raise AuthError("Access token required")
 
-        g.access_token = services.token_service.decode_access_token(token)
+        g_proxy.access_token = services.token_service.decode_access_token(token)
 
         return func(*args, **kwargs)
 

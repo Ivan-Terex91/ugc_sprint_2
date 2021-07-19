@@ -5,7 +5,7 @@ from flask_restx import fields
 OAuthAccountModel = api.model(
     "OAuthAccountModel",
     {
-        "provider": fields.String(enum=[p.value for p in OAuthProvider]),
+        "provider": fields.String(enum=[provider.value for provider in OAuthProvider]),
         "exp": fields.DateTime(),
     },
 )
