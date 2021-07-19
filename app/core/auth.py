@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import httpx
 from fastapi import Depends, HTTPException, status
@@ -20,10 +21,10 @@ class AuthClient:
             )
 
 
-auth_client: AuthClient = None
+auth_client: Optional[AuthClient] = None
 
 
-def get_auth_client() -> AuthClient:
+def get_auth_client() -> Optional[AuthClient]:
     return auth_client
 
 

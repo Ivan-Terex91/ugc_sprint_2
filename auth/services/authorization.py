@@ -32,13 +32,13 @@ class AuthorizationService:
 
     def add_role_to_user(self, user_id: UUID, role_title: str):
         """Добавление роли пользователю"""
-        role = self.session.query(Role).filter(Role.title == role_title).first()
+        role: Role = self.session.query(Role).filter(Role.title == role_title).first()
         user_role = UserRole(user_id=user_id, role_id=role.id)
         self.session.add(user_role)
 
     def delete_role_from_user(self, user_id: UUID, role_title: str):
         """Удаление роли у пользователя"""
-        role = self.session.query(Role).filter(Role.title == role_title).first()
+        role: Role = self.session.query(Role).filter(Role.title == role_title).first()
         user_role = UserRole(user_id=user_id, role_id=role.id)
         return (
             self.session.query(UserRole)

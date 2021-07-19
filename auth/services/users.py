@@ -30,7 +30,7 @@ class UserService:
 
     def put(self, user_id: UUID, **updated_data) -> Optional[User]:
         """Редактирование пользователя"""
-        user = self.session.query(User).get({"id": user_id})
+        user: User = self.session.query(User).get({"id": user_id})
         if "email" in updated_data:
             if (
                 self.session.query(User)

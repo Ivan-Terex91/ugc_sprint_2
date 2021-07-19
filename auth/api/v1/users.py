@@ -1,7 +1,7 @@
 import datetime
 
 from api.v1.models.history import History
-from api.v1.models.users import ChangePassword, UserModel
+from api.v1.models.users import ChangePassword as ImportedChangePassword, UserModel
 from core.api import Resource, login_required
 from flask import request
 from flask_restx import Namespace
@@ -91,7 +91,7 @@ class ChangePassword(Resource):
     @ns.response(200, description="Successful change password")
     @ns.response(401, description="Unauthorized")
     @ns.response(400, description="Bad request")
-    @ns.expect(ChangePassword, validate=True)
+    @ns.expect(ImportedChangePassword, validate=True)
     def patch(self):
         """Change user password"""
         token = request.headers.get("TOKEN")

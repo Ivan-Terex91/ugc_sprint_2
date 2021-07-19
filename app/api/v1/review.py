@@ -66,13 +66,13 @@ async def add_or_update_review_rating(
 @router.get(path="/{movie_id:uuid}/list_review/")
 async def list_movie_review(
     movie_id: UUID4,
-    sort: Optional[SortFields] = SortFields.created_at__asc,
+    sort: SortFields = SortFields.created_at__asc,
     review_service: ReviewService = Depends(get_review_service),
     auth_user=Depends(auth_current_user),
 ):
     """Список рецензий к фильму"""
-    sort_value, sort_order = sort.name.split("__")
-    sort_order = 1 if sort_order == "asc" else -1
+    sort_value, sort_order_str = sort.name.split("__")
+    sort_order_int = 1 if sort_order_str == "asc" else -1
     return await review_service.get_film_reviews(
-        movie_id=movie_id, sort_value=sort_value, sort_order=sort_order
+        movie_id=movie_id, sort_value=sort_value, sort_order=sort_order_int
     )
