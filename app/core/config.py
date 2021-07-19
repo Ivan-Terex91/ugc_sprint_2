@@ -1,6 +1,6 @@
 import os
 
-PROJECT_NAME = "User generation content"
+PROJECT_NAME = "User generated content"
 MONGO_DSN = os.getenv("MONGO_DSN", "mongodb://localhost:27017")
 AUTH_URL = os.getenv("AUTH_URL", "http://localhost:8001/")
 DB = os.getenv("DB", "ugcDb")

@@ -71,7 +71,7 @@ async def change_movie_rating(
     )
 
 
-@router.delete(path="/{movie_id:uuid}/change_rating/")
+@router.delete(path="/{movie_id:uuid}/delete_rating/")
 async def delete_movie_rating(
     movie_id: UUID4,
     rating_service: RatingService = Depends(get_rating_service),
