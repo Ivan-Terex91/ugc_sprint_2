@@ -1,9 +1,8 @@
 import logging
 
-import uvicorn as uvicorn
+import uvicorn
 from api.v1 import bookmark, rating, review
 from core import auth, config, mongo
-from core.auth import AuthClient
 from core.logger import LOGGING
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
@@ -19,7 +18,7 @@ app = FastAPI(
 
 @app.on_event("startup")
 async def startup():
-    auth.auth_client = AuthClient(base_url=config.AUTH_URL)
+    auth.auth_client = auth.AuthClient(base_url=config.AUTH_URL)
     mongo.mongo_client = AsyncIOMotorClient(config.MONGO_DSN)
 
 

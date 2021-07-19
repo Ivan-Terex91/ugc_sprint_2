@@ -18,7 +18,6 @@ class UserService:
 
     def create(self, **created_data) -> User:
         """Создание нового пользователя"""
-
         if self.session.query(User).filter(User.email == created_data["email"]).first():
             raise EmailUsedError("This email address is already in use")
 
@@ -30,7 +29,7 @@ class UserService:
 
     def put(self, user_id: UUID, **updated_data) -> Optional[User]:
         """Редактирование пользователя"""
-        user = self.session.query(User).get({"id": user_id})
+        user: User = self.session.query(User).get({"id": user_id})
         if "email" in updated_data:
             if (
                 self.session.query(User)

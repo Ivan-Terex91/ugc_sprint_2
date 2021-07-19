@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from api import api
 from flask_restx import fields
 

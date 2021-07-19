@@ -41,17 +41,17 @@ class CaptchaService:
         generator = CaptchaGenerator(CAPCTHA_SIZE_NUM)
         captcha = generator.gen_captcha_image(difficult_level=3)
 
-        b = BytesIO()
+        bytes = BytesIO()
         image = captcha["image"]
-        image.save(b, "png")
-        b.seek(0)
+        image.save(bytes, "png")
+        bytes.seek(0)
 
         id = uuid4()
         hash_key = sha256((f'{id}{captcha["characters"]}').encode()).hexdigest()
         captcha_challenge = CaptchaChallenge(
             id=id,
             hash_key=hash_key,
-            payload=b.read(),
+            payload=bytes.read(),
             exp=datetime.now(tz=timezone.utc) + timedelta(minutes=5),
         )
         self.session.add(captcha_challenge)

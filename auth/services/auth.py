@@ -56,10 +56,7 @@ class TokenService:
         country: str,
         birthdate: str,
     ) -> Tuple[str, str]:
-        """
-        Создание новой пары access, refresh токенов
-        """
-
+        """Создание новой пары access, refresh токенов"""
         now = datetime.now(tz=timezone.utc)
         payload = {
             "user_id": str(user_id),
@@ -88,7 +85,6 @@ class TokenService:
 
         :raises AccessTokenRevoked: Если токен был отозван (пользователь вышел из аккаунта)
         """
-
         payload = jwt.decode(
             token,
             key=self.secret_key,
@@ -113,10 +109,10 @@ class TokenService:
     def refresh_tokens(self, token: str) -> Tuple[str, str]:
         """
         Обновление access, refresh токенов.
+
         1. Старый refresh токен удаляется, старый access токен помечается как revoked
         2. Генерируется новая пара access, refresh токенов
         """
-
         refresh_token = self._get_refresh_token(token)
         access_token = self.decode_access_token(
             refresh_token.access_token, verify_exp=False
@@ -137,6 +133,7 @@ class TokenService:
     def remove_tokens(self, access_token: AccessToken):
         """
         Удаление access, refresh токенов.
+
         1. Удаление refresh токена
         2. Access токен поменяется как revoked
         """
