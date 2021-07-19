@@ -32,6 +32,7 @@ jobs:
       uses: wemake-services/wemake-python-styleguide@0.15.3
       continue-on-error: true
     - name: Mypy Check
+      if: success()
       run: |
         mypy --install-types --non-interactive .
     - name: Notify In Telegram Channel
