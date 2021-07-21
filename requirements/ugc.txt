@@ -4,3 +4,4 @@ uvicorn
 gunicorn
 httpx
 motor
+sentry-sdk
