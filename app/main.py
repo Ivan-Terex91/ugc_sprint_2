@@ -1,5 +1,6 @@
 import logging
 
+import sentry_sdk
 import uvicorn
 from api.v1 import bookmark, rating, review
 from core import auth, config, mongo
@@ -7,8 +8,6 @@ from core.logger import LOGGING
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from motor.motor_asyncio import AsyncIOMotorClient
-
-import sentry_sdk
 
 sentry_sdk.init(
     dsn=config.SENTRY_DSN,

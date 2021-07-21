@@ -1,3 +1,7 @@
+from logging import INFO
+from os import getenv
+
+import sentry_sdk
 from api import api
 from api.staff.v1.auth import ns as staff_auth_ns
 from api.v1.auth import ns as auth_ns
@@ -7,12 +11,13 @@ from api.v1.oauth import ns as oauth_ns
 from api.v1.users import ns as profile_ns
 from core.db import init_session
 from core.oauth import oauth
+from core.utils import RequestIdFilter
 from flask import Flask
+from logstash import LogstashHandler
 from pydantic import BaseSettings, PostgresDsn, RedisDsn
 from redis import Redis
-from services import Services
 from sentry_sdk.integrations.flask import FlaskIntegration
-import sentry_sdk
+from services import Services
 
 
 class Settings(BaseSettings):
@@ -34,12 +39,10 @@ def create_app():
     sentry_sdk.init(
         dsn=settings.SENTRY_DSN,
         integrations=[FlaskIntegration()],
-
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         # We recommend adjusting this value in production.
         traces_sample_rate=1.0,
-
         # By default the SDK will try to use the SENTRY_RELEASE
         # environment variable, or infer a git commit
         # SHA as release, however you may want to set
@@ -47,6 +50,15 @@ def create_app():
         # release="myapp@1.0.0",
     )
     app = Flask(__name__)
+
+    app.logger.level = INFO
+    app.logger.addFilter(RequestIdFilter())
+    app.logger.addHandler(
+        LogstashHandler(
+            getenv("LOGSTASH_HOST"), getenv("LOGSTASH_PORT"), version=1, tags=["auth"]
+        )
+    )
+
     app.config["SECRET_KEY"] = settings.secret_key
     app.config["ERROR_404_HELP"] = False
 

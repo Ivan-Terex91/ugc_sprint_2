@@ -16,3 +16,4 @@ Authlib
 pydantic[dotenv]
 multicolorcaptcha
 sqlalchemy-stubs
+python-logstash
