@@ -8,12 +8,33 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn=config.SENTRY_DSN,
+)
+
 app = FastAPI(
     title=config.PROJECT_NAME,
     docs_url="/api/openapi",
     openapi_url="/api/openapi.json",
     default_response_class=ORJSONResponse,
 )
+
+
+@app.middleware("http")
+async def sentry_exception(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        with sentry_sdk.push_scope() as scope:
+            scope.set_context("request", request)
+            scope.user = {
+                "ip_address": request.client.host,
+            }
+            sentry_sdk.capture_exception(e)
+        raise e
 
 
 @app.on_event("startup")

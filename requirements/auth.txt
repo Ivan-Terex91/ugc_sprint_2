@@ -1,5 +1,6 @@
 Flask==1.1.4
 Flask-SQLAlchemy
+sentry-sdk[flask]
 gunicorn
 flask-restx
 pydantic

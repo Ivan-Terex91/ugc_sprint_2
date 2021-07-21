@@ -11,6 +11,8 @@ from flask import Flask
 from pydantic import BaseSettings, PostgresDsn, RedisDsn
 from redis import Redis
 from services import Services
+from sentry_sdk.integrations.flask import FlaskIntegration
+import sentry_sdk
 
 
 class Settings(BaseSettings):
@@ -20,6 +22,7 @@ class Settings(BaseSettings):
 
     oauth_facebook_client_id: str
     oauth_facebook_client_secret: str
+    SENTRY_DSN: str = None
 
     class Config:
         env_file = ".env"
@@ -28,7 +31,21 @@ class Settings(BaseSettings):
 
 def create_app():
     settings = Settings()
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        integrations=[FlaskIntegration()],
 
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=1.0,
+
+        # By default the SDK will try to use the SENTRY_RELEASE
+        # environment variable, or infer a git commit
+        # SHA as release, however you may want to set
+        # something more human-readable.
+        # release="myapp@1.0.0",
+    )
     app = Flask(__name__)
     app.config["SECRET_KEY"] = settings.secret_key
     app.config["ERROR_404_HELP"] = False
