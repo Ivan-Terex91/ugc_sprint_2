@@ -1,13 +1,16 @@
 import logging
+from os import getenv
 
 import sentry_sdk
 import uvicorn
-from api.v1 import bookmark, rating, review
-from core import auth, config, mongo
-from core.logger import LOGGING
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
+from logstash import LogstashHandler
 from motor.motor_asyncio import AsyncIOMotorClient
+from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
+
+from api.v1 import bookmark, rating, review
+from core import auth, config, mongo
 
 sentry_sdk.init(
     dsn=config.SENTRY_DSN,
@@ -20,20 +23,12 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
 )
 
-
-@app.middleware("http")
-async def sentry_exception(request: Request, call_next):
-    try:
-        response = await call_next(request)
-        return response
-    except Exception as e:
-        with sentry_sdk.push_scope() as scope:
-            scope.set_context("request", request)
-            scope.user = {
-                "ip_address": request.client.host,
-            }
-            sentry_sdk.capture_exception(e)
-        raise e
+logger = logging.getLogger("ugc")
+logger.addHandler(LogstashHandler(
+    getenv("LOGSTASH_HOST"), getenv("LOGSTASH_PORT"), version=1, tags=["ugc"]
+))
+logger.setLevel(logging.INFO)
+uvicorn.logger = logger
 
 
 @app.on_event("startup")
@@ -56,7 +51,6 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=7777,
-        log_config=LOGGING,
-        log_level=logging.DEBUG,
         reload=True,
+        log_config=None
     )
