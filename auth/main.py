@@ -1,6 +1,3 @@
-from logging import INFO
-from time import strftime
-
 import sentry_sdk
 from api import api
 from api.staff.v1.auth import ns as staff_auth_ns
@@ -11,9 +8,8 @@ from api.v1.oauth import ns as oauth_ns
 from api.v1.users import ns as profile_ns
 from core.db import init_session
 from core.oauth import oauth
-from core.utils import RequestIdFilter
+from core.utils import add_logstash_handler
 from flask import Flask, request
-from logstash import LogstashHandler
 from pydantic import BaseSettings, PostgresDsn, RedisDsn
 from redis import Redis
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -27,9 +23,9 @@ class Settings(BaseSettings):
 
     oauth_facebook_client_id: str
     oauth_facebook_client_secret: str
-    SENTRY_DSN: str = None
-    LOGSTASH_HOST: str
-    LOGSTASH_PORT: str
+    sentry_dsn: str = None
+    logstash_host: str
+    logstash_port: str
 
     class Config:
         env_file = ".env"
@@ -39,7 +35,7 @@ class Settings(BaseSettings):
 def create_app():
     settings = Settings()
     sentry_sdk.init(
-        dsn=settings.SENTRY_DSN,
+        dsn=settings.sentry_dsn,
         integrations=[FlaskIntegration()],
         traces_sample_rate=1.0,
     )
@@ -76,17 +72,7 @@ def create_app():
     app.extensions["services"] = services
     api.services = services
 
-    logstash_handler = LogstashHandler(
-        settings.LOGSTASH_HOST,
-        int(settings.LOGSTASH_PORT),
-        version=1,
-    )
-    logstash_handler.setLevel(INFO)
-    logstash_handler.addFilter(RequestIdFilter())
-    app.logger.setLevel(INFO)
-    app.logger.addHandler(logstash_handler)
-
-    return app
+    return add_logstash_handler(app, settings)
 
 
 app = create_app()
@@ -95,12 +81,6 @@ app = create_app()
 @app.after_request
 def log_request_info(response):
     app.logger.info(
-        "%s %s %s %s %s %s",
-        request.remote_addr,
-        request.method,
-        request.scheme,
-        request.full_path,
-        request.get_data(),
-        response.status,
+        f"{request.remote_addr} {request.method} {request.scheme} {request.full_path} {request.get_data()} {response.status}"
     )
     return response
