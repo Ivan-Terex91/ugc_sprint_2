@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     oauth_facebook_client_id: str
     oauth_facebook_client_secret: str
-    sentry_dsn: str = None
+    sentry_dsn: str
     logstash_host: str
     logstash_port: str
 
