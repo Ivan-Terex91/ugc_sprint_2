@@ -1,3 +1,7 @@
+from logging import INFO
+from time import strftime
+
+import sentry_sdk
 from api import api
 from api.staff.v1.auth import ns as staff_auth_ns
 from api.v1.auth import ns as auth_ns
@@ -7,9 +11,12 @@ from api.v1.oauth import ns as oauth_ns
 from api.v1.users import ns as profile_ns
 from core.db import init_session
 from core.oauth import oauth
-from flask import Flask
+from core.utils import RequestIdFilter
+from flask import Flask, request
+from logstash import LogstashHandler
 from pydantic import BaseSettings, PostgresDsn, RedisDsn
 from redis import Redis
+from sentry_sdk.integrations.flask import FlaskIntegration
 from services import Services
 
 
@@ -20,6 +27,9 @@ class Settings(BaseSettings):
 
     oauth_facebook_client_id: str
     oauth_facebook_client_secret: str
+    SENTRY_DSN: str = None
+    LOGSTASH_HOST: str
+    LOGSTASH_PORT: str
 
     class Config:
         env_file = ".env"
@@ -28,8 +38,14 @@ class Settings(BaseSettings):
 
 def create_app():
     settings = Settings()
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=1.0,
+    )
 
     app = Flask(__name__)
+
     app.config["SECRET_KEY"] = settings.secret_key
     app.config["ERROR_404_HELP"] = False
 
@@ -60,7 +76,31 @@ def create_app():
     app.extensions["services"] = services
     api.services = services
 
+    logstash_handler = LogstashHandler(
+        settings.LOGSTASH_HOST,
+        int(settings.LOGSTASH_PORT),
+        version=1,
+    )
+    logstash_handler.setLevel(INFO)
+    logstash_handler.addFilter(RequestIdFilter())
+    app.logger.setLevel(INFO)
+    app.logger.addHandler(logstash_handler)
+
     return app
 
 
 app = create_app()
+
+
+@app.after_request
+def log_request_info(response):
+    app.logger.info(
+        "%s %s %s %s %s %s",
+        request.remote_addr,
+        request.method,
+        request.scheme,
+        request.full_path,
+        request.get_data(),
+        response.status,
+    )
+    return response
