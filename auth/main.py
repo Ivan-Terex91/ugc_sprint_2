@@ -80,7 +80,6 @@ app = create_app()
 
 @app.after_request
 def log_request_info(response):
-    app.logger.info(
-        f"{request.remote_addr} {request.method} {request.scheme} {request.full_path} {request.get_data()} {response.status}"
-    )
+    app.logger.info(f"{request.remote_addr} {request.method} {request.scheme} \
+        {request.full_path} {request.get_data()} {response.status}")
     return response
