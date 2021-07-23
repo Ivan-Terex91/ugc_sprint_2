@@ -1,5 +1,6 @@
 import logging
 
+import logstash
 import sentry_sdk
 import uvicorn
 from api.v1 import bookmark, rating, review
@@ -8,12 +9,8 @@ from core.logger import LOGGING
 from fastapi import FastAPI, Request
 from fastapi.responses import ORJSONResponse
 from motor.motor_asyncio import AsyncIOMotorClient
-import logstash
 
-sentry_sdk.init(
-    dsn=config.SENTRY_DSN,
-    traces_sample_rate=1.0
-)
+sentry_sdk.init(dsn=config.SENTRY_DSN, traces_sample_rate=1.0)
 
 app = FastAPI(
     title=config.PROJECT_NAME,
@@ -26,23 +23,27 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup():
     auth.auth_client = auth.AuthClient(base_url=config.AUTH_URL)
-    mongo.mongo_client = AsyncIOMotorClient(config.MONGO_DSN)
+    mongo.mongo_client = AsyncIOMotorClient(
+        config.MONGO_DSN, username=config.MONGO_USER, password=config.MONGO_PASSWORD
+    )
 
 
 @app.on_event("shutdown")
 async def shutdown():
     mongo.mongo_client.close()
 
+
 logger = logging.getLogger("Ugc FastAPI logger")
 logger.setLevel(logging.INFO)
-logger.addHandler(logstash.LogstashHandler(config.LOGSTASH_HOST, int(config.LOGSTASH_PORT), version=1))
+logger.addHandler(
+    logstash.LogstashHandler(config.LOGSTASH_HOST, int(config.LOGSTASH_PORT), version=1)
+)
 
 
 @app.middleware("http")
 async def logging_request(request: Request, call_next):
     response = await call_next(request)
-    request_id = request.headers.get("X-Request-Id")
-    req_logger = logging.LoggerAdapter(logger=logger, extra={"tag": "ugc", "request": request_id})
+    req_logger = logging.LoggerAdapter(logger=logger, extra={"tag": "ugc"})
     req_logger.info(request)
     return response
 

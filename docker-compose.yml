@@ -1,135 +1,16 @@
 version: '3.5'
 
 services:
-  mongors1n1:
-    container_name: mongors1n1
-    image: mongo
-    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
+  mongo:
+    container_name: mongo
+    image: mongo:4.4.6
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=pass
     ports:
-      - 27017:27017
-    expose:
-      - "27017"
+      - '27017:27017'
     volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /tmp/mongo_cluster/data1:/data/db
-
-  mongors1n2:
-    container_name: mongors1n2
-    image: mongo
-    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
-    ports:
-      - 27027:27017
-    expose:
-      - "27017"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /tmp/mongo_cluster/data2:/data/db
-
-  mongors1n3:
-    container_name: mongors1n3
-    image: mongo
-    command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
-    ports:
-      - 27037:27017
-    expose:
-      - "27017"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /tmp/mongo_cluster/data3:/data/db
-
-  mongors2n1:
-    container_name: mongors2n1
-    image: mongo
-    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
-    ports:
-      - 27047:27017
-    expose:
-      - "27017"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /tmp/mongo_cluster/data4:/data/db
-
-  mongors2n2:
-    container_name: mongors2n2
-    image: mongo
-    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
-    ports:
-      - 27057:27017
-    expose:
-      - "27017"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /tmp/mongo_cluster/data5:/data/db
-
-  mongors2n3:
-    container_name: mongors2n3
-    image: mongo
-    command: mongod --shardsvr --replSet mongors2 --dbpath /data/db --port 27017
-    ports:
-      - 27067:27017
-    expose:
-      - "27017"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /tmp/mongo_cluster/data6:/data/db
-
-  mongocfg1:
-    container_name: mongocfg1
-    image: mongo
-    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
-    expose:
-      - "27017"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /tmp/mongo_cluster/config1:/data/db
-
-  mongocfg2:
-    container_name: mongocfg2
-    image: mongo
-    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
-    expose:
-      - "27017"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /tmp/mongo_cluster/config2:/data/db
-
-  mongocfg3:
-    container_name: mongocfg3
-    image: mongo
-    command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
-    expose:
-      - "27017"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /tmp/mongo_cluster/config3:/data/db
-
-  mongos1:
-    container_name: mongos1
-    image: mongo
-    depends_on:
-      - mongocfg1
-      - mongocfg2
-    command: mongos --configdb mongors1conf/mongocfg1:27017,mongocfg2:27017,mongocfg3:27017 --port 27017
-    ports:
-      - 27019:27017
-    expose:
-      - "27017"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-
-  mongos2:
-    container_name: mongos2
-    image: mongo
-    depends_on:
-      - mongocfg1
-      - mongocfg2
-    command: mongos --configdb mongors1conf/mongocfg1:27017,mongocfg2:27017,mongocfg3:27017 --port 27017
-    ports:
-      - 27020:27017
-    expose:
-      - "27017"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
+      - mongo_data:/data/db
 
   ugc:
     build:
@@ -142,17 +23,7 @@ services:
     ports:
       - 7777:7777
     depends_on:
-      - mongors1n1
-      - mongors1n2
-      - mongors1n3
-      - mongors2n1
-      - mongors2n2
-      - mongors2n3
-      - mongocfg1
-      - mongocfg2
-      - mongocfg3
-      - mongos1
-      - mongos2
+      - mongo
 
   auth:
     build:
@@ -188,8 +59,8 @@ services:
     ports:
       - "5044:5044/udp"
     volumes:
-      - ./deploy/logstash.conf:/config/logstash.conf:ro
-    command: logstash -f /config/logstash.conf
+      - ./deploy/etc/logstash/logstash.conf:/etc/logstash/logstash.conf:ro
+    command: logstash -f /etc/logstash/logstash.conf
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
@@ -207,6 +78,8 @@ services:
     depends_on:
       - elasticsearch
 
+
 volumes:
   pg_data:
   redis_data:
+  mongo_data:
