@@ -44,7 +44,7 @@ logger.addHandler(
 async def logging_request(request: Request, call_next):
     response = await call_next(request)
     req_logger = logging.LoggerAdapter(logger=logger, extra={"tag": "ugc"})
-    req_logger.info(request)
+    req_logger.info(request.__dict__)
     return response
 
 
