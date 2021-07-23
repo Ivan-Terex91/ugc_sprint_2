@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     oauth_facebook_client_id: str
     oauth_facebook_client_secret: str
     SENTRY_DSN: str = None
+    LOGSTASH_HOST: str
+    LOGSTASH_PORT: str
 
     class Config:
         env_file = ".env"
@@ -55,7 +57,10 @@ def create_app():
     app.logger.addFilter(RequestIdFilter())
     app.logger.addHandler(
         LogstashHandler(
-            getenv("LOGSTASH_HOST"), getenv("LOGSTASH_PORT"), version=1, tags=["auth"]
+            settings.LOGSTASH_HOST,
+            int(settings.LOGSTASH_HOST),
+            version=1,
+            tags=["auth"],
         )
     )
 
