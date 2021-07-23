@@ -181,6 +181,32 @@ services:
     volumes:
       - redis_data:/data
 
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.10.2
+    env_file:
+      ./.env
+    ports:
+      - "5044:5044/udp"
+    volumes:
+      - ./deploy/logstash.conf:/config/logstash.conf:ro
+    command: logstash -f /config/logstash.conf
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    env_file:
+      ./.env
+    ports:
+      - 9200:9200
+    volumes:
+      - /tmp/esdata:/tmp/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.2
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
 volumes:
   pg_data:
   redis_data:
