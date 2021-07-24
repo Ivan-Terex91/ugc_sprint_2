@@ -1,3 +1,4 @@
+import sentry_sdk
 from api import api
 from api.staff.v1.auth import ns as staff_auth_ns
 from api.v1.auth import ns as auth_ns
@@ -7,9 +8,11 @@ from api.v1.oauth import ns as oauth_ns
 from api.v1.users import ns as profile_ns
 from core.db import init_session
 from core.oauth import oauth
-from flask import Flask
+from core.utils import add_logstash_handler
+from flask import Flask, request
 from pydantic import BaseSettings, PostgresDsn, RedisDsn
 from redis import Redis
+from sentry_sdk.integrations.flask import FlaskIntegration
 from services import Services
 
 
@@ -20,6 +23,9 @@ class Settings(BaseSettings):
 
     oauth_facebook_client_id: str
     oauth_facebook_client_secret: str
+    sentry_dsn: str
+    logstash_host: str
+    logstash_port: str
 
     class Config:
         env_file = ".env"
@@ -28,8 +34,14 @@ class Settings(BaseSettings):
 
 def create_app():
     settings = Settings()
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=1.0,
+    )
 
     app = Flask(__name__)
+
     app.config["SECRET_KEY"] = settings.secret_key
     app.config["ERROR_404_HELP"] = False
 
@@ -60,7 +72,14 @@ def create_app():
     app.extensions["services"] = services
     api.services = services
 
-    return app
+    return add_logstash_handler(app, settings)
 
 
 app = create_app()
+
+
+@app.after_request
+def log_request_info(response):
+    app.logger.info(f"{request.remote_addr} {request.method} {request.scheme} \
+        {request.full_path} {request.get_data()} {response.status}")
+    return response
