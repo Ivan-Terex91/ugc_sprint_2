@@ -67,7 +67,7 @@ async def list_movie_review(
     movie_id: UUID4,
     sort: SortFields = SortFields.created_at__asc,
     review_service: ReviewService = Depends(get_review_service),
-    auth_user=Depends(auth_current_user),
+    _=Depends(auth_current_user),
 ):
     """Список рецензий к фильму"""
     sort_value, sort_order_str = sort.name.split("__")

@@ -5,6 +5,7 @@
 1. Скопировать переменные окружения командой `make copy_env_file`.
 2. Запустить `docker-compose up -d --build`
 3. Выполнить команду `bash up_mongo.sh`
+4. Swagger - `http://127.0.0.1:7777/api/openapi`
 
 
 [Сервис хранения, обработки и предоставления пользовательских данных о фильмах](https://github.com/Ivan-Terex91/ugc_sprint_2/pull/6)
